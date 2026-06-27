@@ -159,6 +159,7 @@ model User {
 
   // App relations
   memberships    Membership[]
+  projectMembers ProjectMember[]
   tasks          Task[]
   justifications Justification[]
 
@@ -180,28 +181,32 @@ model Project {
   businessGoals    String
   targetUsers      String
   projectType      ProjectType @default(EXISTING)
+  codebaseSummary  String?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
-  workspace           Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  featureRequests     FeatureRequest[]
-  gitHubRepo          GitHubRepo?
-  clientProjectAccess ClientProjectAccess[]
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  featureRequests FeatureRequest[]
+  gitHubRepo      GitHubRepo?
+  projectMembers  ProjectMember[]
 
   @@index([workspaceId])
 }
 
-model ClientProjectAccess {
+model ProjectMember {
   id        String   @id @default(cuid())
-  clientId  String
   projectId String
+  userId    String
+  role      Role
   createdAt DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([clientId, projectId])
-  @@index([clientId])
+  @@unique([projectId, userId])
   @@index([projectId])
+  @@index([userId])
+  @@index([projectId, role])
 }
 
 model FeatureRequest {
@@ -303,7 +308,7 @@ model GitHubRepo {
   id             String   @id @default(cuid())
   projectId      String   @unique
   repoFullName   String
-  installationId String
+  installationId String?
   defaultBranch  String   @default("main")
   createdAt      DateTime @default(now())
 
@@ -312,7 +317,6 @@ model GitHubRepo {
 
   @@index([projectId])
   @@index([repoFullName])
-  @@index([installationId])
 }
 
 model PullRequest {
