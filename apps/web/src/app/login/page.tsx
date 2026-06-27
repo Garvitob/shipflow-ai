@@ -23,7 +23,12 @@ export default function LoginPage() {
     const { error: signInError } = await signIn.email({ email, password })
 
     if (signInError) {
-      setError(signInError.message ?? "Could not sign in. Check your credentials.")
+      const isRateLimited = signInError.status === 429
+      setError(
+        isRateLimited
+          ? "Too many sign-in attempts. Please wait a few minutes and try again."
+          : signInError.message ?? "Could not sign in. Check your credentials."
+      )
       setLoading(false)
       return
     }

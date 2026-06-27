@@ -121,6 +121,17 @@ async function main() {
     return { workspace, user }
   })
 
+  await prisma.auditLog.create({
+    data: {
+      workspaceId: workspace.id,
+      actorId: user.id,
+      action: "workspace.provisioned",
+      entityType: "Workspace",
+      entityId: workspace.id,
+      metadata: JSON.stringify({ adminEmail: user.email, slug: workspace.slug }),
+    },
+  })
+
   try {
     await sendSetPasswordLink(adminEmail)
   } catch (err) {

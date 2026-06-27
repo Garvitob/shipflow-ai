@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { nextCookies } from "better-auth/next-js"
 import { prisma } from "@shipflow/db"
 import { sendPasswordSetupEmail } from "@/lib/email"
+import { writeAudit, resolveWorkspaceId } from "@/lib/audit"
 
 const APP_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
 
@@ -14,22 +15,61 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     autoSignIn: true,
-    // Token validity for set-password / reset links (24 hours)
     resetPasswordTokenExpiresIn: 60 * 60 * 24,
-    // Called when a password reset / set-password link is requested.
-    // Used for: provisioned admins setting their first password,
-    // invited members setting their password, and forgot-password resets.
     sendResetPassword: async ({ user, url }) => {
       await sendPasswordSetupEmail({
         to: user.email,
         name: user.name,
         url,
       })
+      const workspaceId = await resolveWorkspaceId(user.id)
+      if (workspaceId) {
+        await writeAudit({
+          workspaceId,
+          actorId: user.id,
+          action: "password.reset_requested",
+          entityType: "User",
+          entityId: user.id,
+        })
+      }
+    },
+    onPasswordReset: async ({ user }) => {
+      const workspaceId = await resolveWorkspaceId(user.id)
+      if (workspaceId) {
+        await writeAudit({
+          workspaceId,
+          actorId: user.id,
+          action: "password.reset_completed",
+          entityType: "User",
+          entityId: user.id,
+        })
+      }
     },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          const workspaceId = await resolveWorkspaceId(session.userId)
+          if (workspaceId) {
+            await writeAudit({
+              workspaceId,
+              actorId: session.userId,
+              action: "user.login",
+              entityType: "Session",
+              entityId: session.id,
+              metadata: session.ipAddress
+                ? { ip: session.ipAddress }
+                : undefined,
+            })
+          }
+        },
+      },
+    },
   },
   advanced: {
     database: {
