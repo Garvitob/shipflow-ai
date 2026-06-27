@@ -1,21 +1,45 @@
 {
-  "$schema": "https://turborepo.dev/schema.json",
-  "ui": "tui",
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local", ".env"],
+  "globalEnv": [
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
+    "GITHUB_APP_ID",
+    "GITHUB_APP_PRIVATE_KEY",
+    "GITHUB_WEBHOOK_SECRET",
+    "NEXT_PUBLIC_GITHUB_APP_NAME",
+    "INNGEST_EVENT_KEY",
+    "INNGEST_SIGNING_KEY",
+    "RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET",
+    "RESEND_API_KEY",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "NEXT_PUBLIC_APP_URL",
+    "NODE_ENV"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "lint": {},
+    "type-check": {
+      "dependsOn": ["^build"]
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false
     }
   }
 }

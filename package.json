@@ -1,20 +1,22 @@
 {
-  "name": "shipflow-ai",
+  "name": "shipflow",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "type-check": "turbo run type-check",
+    "db:push": "pnpm --filter @shipflow/db db:push",
+    "db:generate": "pnpm --filter @shipflow/db db:generate",
+    "db:studio": "pnpm --filter @shipflow/db db:studio"
   },
   "devDependencies": {
-    "prettier": "^3.7.4",
-    "turbo": "^2.10.0",
-    "typescript": "5.9.2"
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.0",
+    "typescript": "^5.5.4"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
