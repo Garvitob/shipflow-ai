@@ -6,7 +6,7 @@ import {
   GitPullRequest,
   ClipboardCheck,
   ListChecks,
-  Users,
+  ScrollText,
   CreditCard,
   GitBranch,
   FolderKanban,
@@ -48,7 +48,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       items: [
         { label: "Overview", href: "/admin", icon: LayoutDashboard },
         { label: "Projects", href: "/admin/projects", icon: FolderKanban },
-        { label: "Members", href: "/admin/members", icon: Users },
+        { label: "Audit log", href: "/admin/audit", icon: ScrollText },
       ],
     },
     {
