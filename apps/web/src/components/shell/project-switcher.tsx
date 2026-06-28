@@ -1,7 +1,7 @@
 "use client"
 
-import { ChevronsUpDown, Check, Plus, Search } from "lucide-react"
-import * as React from "react"
+import { ChevronsUpDown, Check, Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +27,19 @@ export function ProjectSwitcher({
   canCreate?: boolean
   onSelect?: (id: string) => void
 }) {
+  const router = useRouter()
   const active = projects.find((p) => p.id === activeId) ?? null
 
+  function handleSelect(id: string) {
+    if (onSelect) {
+      onSelect(id)
+    } else {
+      router.push(`/admin/projects/${id}`)
+    }
+  }
+
   if (projects.length === 0) {
-    return (
-      <span className="text-sm text-muted-foreground">No projects</span>
-    )
+    return <span className="text-sm text-muted-foreground">No projects</span>
   }
 
   return (
@@ -49,7 +56,7 @@ export function ProjectSwitcher({
         <DropdownMenuLabel>Projects</DropdownMenuLabel>
         <div className="max-h-[280px] overflow-y-auto">
           {projects.map((p) => (
-            <DropdownMenuItem key={p.id} onClick={() => onSelect?.(p.id)}>
+            <DropdownMenuItem key={p.id} onClick={() => handleSelect(p.id)}>
               <div className="flex h-5 w-5 items-center justify-center rounded bg-secondary text-[10px] font-semibold text-secondary-foreground">
                 {p.name.charAt(0).toUpperCase()}
               </div>
@@ -61,7 +68,7 @@ export function ProjectSwitcher({
         {canCreate && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/admin/projects/new")}>
               <Plus className="h-4 w-4" />
               <span>New project</span>
             </DropdownMenuItem>

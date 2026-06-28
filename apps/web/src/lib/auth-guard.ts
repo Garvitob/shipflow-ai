@@ -18,6 +18,7 @@ export type AuthContext = {
   workspaceId: string
   workspaceName: string
   workspaceSlug: string
+  workspacePlan: string
   role: Role
 }
 
@@ -39,6 +40,7 @@ export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
     workspaceId: membership.workspaceId,
     workspaceName: membership.workspace.name,
     workspaceSlug: membership.workspace.slug,
+    workspacePlan: membership.workspace.plan,
     role: membership.role,
   }
 })

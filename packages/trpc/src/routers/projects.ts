@@ -62,7 +62,14 @@ export const projectsRouter = router({
               id: true,
               role: true,
               createdAt: true,
-              user: { select: { id: true, name: true, email: true } },
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  accounts: { select: { password: true } },
+                },
+              },
             },
           },
         },
@@ -71,7 +78,20 @@ export const projectsRouter = router({
       if (!project) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" })
       }
-      return project
+
+      const members = project.projectMembers.map((m) => ({
+        id: m.id,
+        role: m.role,
+        createdAt: m.createdAt,
+        user: { id: m.user.id, name: m.user.name, email: m.user.email },
+        status: m.user.accounts.some((a) => a.password)
+          ? ("active" as const)
+          : ("pending" as const),
+      }))
+
+      const { projectMembers, ...rest } = project
+      void projectMembers
+      return { ...rest, members }
     }),
 
   create: adminProcedure
