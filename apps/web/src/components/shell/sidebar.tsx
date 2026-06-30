@@ -11,7 +11,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { NAV_BY_ROLE, type Role } from "@/lib/navigation"
+import {
+  NAV_BY_ROLE,
+  NAV_ICONS,
+  type Role,
+  type NavSection,
+} from "@/lib/navigation"
 import {
   WorkspaceIdentity,
   type Workspace,
@@ -24,15 +29,17 @@ export function Sidebar({
   user,
   collapsed,
   onToggle,
+  navSections,
 }: {
   role: Role
   workspace: Workspace
   user: SessionUser
   collapsed: boolean
   onToggle: () => void
+  navSections?: NavSection[]
 }) {
   const pathname = usePathname()
-  const sections = NAV_BY_ROLE[role]
+  const sections = navSections ?? NAV_BY_ROLE[role]
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -85,7 +92,7 @@ export function Sidebar({
                   const active =
                     pathname === item.href ||
                     (item.href !== "/" && pathname.startsWith(item.href + "/"))
-                  const Icon = item.icon
+                  const Icon = NAV_ICONS[item.icon]
 
                   const link = (
                     <Link

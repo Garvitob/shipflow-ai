@@ -1,4 +1,5 @@
 import { inngest } from "./client"
+import { analyzeRepository } from "./job"
 
 export const testFunction = inngest.createFunction(
   {
@@ -17,4 +18,4 @@ export const testFunction = inngest.createFunction(
   },
 )
 
-export const functions = [testFunction]
+export const functions = [testFunction, analyzeRepository]

@@ -55,7 +55,16 @@ export const projectsRouter = router({
       const project = await prisma.project.findFirst({
         where: { id: input.id, workspaceId: ctx.auth.workspaceId },
         include: {
-          gitHubRepo: { select: { repoFullName: true, installationId: true } },
+          gitHubRepo: {
+            select: {
+              repoFullName: true,
+              installationId: true,
+              analysisStatus: true,
+              analysisProgress: true,
+              analysisStartedAt: true,
+              analysisCompletedAt: true,
+            },
+          },
           projectMembers: {
             orderBy: { createdAt: "asc" },
             select: {
@@ -92,6 +101,39 @@ export const projectsRouter = router({
       const { projectMembers, ...rest } = project
       void projectMembers
       return { ...rest, members }
+    }),
+
+  // Lightweight status read for the live analysis stepper to poll.
+  // Kept separate from `get` so the ~1.5s poll never refetches members,
+  // context, or the (large) codebase summary.
+  getAnalysisStatus: adminProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const project = await prisma.project.findFirst({
+        where: { id: input.id, workspaceId: ctx.auth.workspaceId },
+        select: {
+          gitHubRepo: {
+            select: {
+              analysisStatus: true,
+              analysisProgress: true,
+              analysisStartedAt: true,
+              analysisCompletedAt: true,
+            },
+          },
+        },
+      })
+
+      if (!project) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" })
+      }
+
+      const repo = project.gitHubRepo
+      return {
+        status: repo?.analysisStatus ?? ("IDLE" as const),
+        progress: repo?.analysisProgress ?? null,
+        startedAt: repo?.analysisStartedAt ?? null,
+        completedAt: repo?.analysisCompletedAt ?? null,
+      }
     }),
 
   create: adminProcedure
@@ -187,8 +229,13 @@ export const projectsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const workspaceId = ctx.auth.workspaceId
+      if (!workspaceId) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+      }
+
       const project = await prisma.project.findFirst({
-        where: { id: input.projectId, workspaceId: ctx.auth.workspaceId },
+        where: { id: input.projectId, workspaceId },
         select: { id: true },
       })
       if (!project) {
@@ -222,6 +269,18 @@ export const projectsRouter = router({
           })
         }
 
+        await tx.membership.upsert({
+          where: {
+            userId_workspaceId: { userId: user.id, workspaceId },
+          },
+          update: {},
+          create: {
+            userId: user.id,
+            workspaceId,
+            role: input.role as Role,
+          },
+        })
+
         await tx.projectMember.create({
           data: {
             projectId: input.projectId,
@@ -230,13 +289,9 @@ export const projectsRouter = router({
           },
         })
 
-        if (!ctx.auth.workspaceId) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
-        }
-
         await tx.auditLog.create({
           data: {
-            workspaceId: ctx.auth.workspaceId,
+            workspaceId,
             actorId: ctx.auth.userId,
             action: "project.member_added",
             entityType: "Project",

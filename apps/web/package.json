@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.2",
     "@octokit/auth-app": "^8.2.0",
     "@octokit/webhooks-methods": "^6.0.0",
     "@radix-ui/react-avatar": "^1.2.0",
@@ -26,6 +27,7 @@
     "@trpc/server": "^11.0.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
+    "ai": "^7.0.4",
     "better-auth": "^1.6.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -42,13 +44,16 @@
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tar-stream": "^3.2.0",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/tar-stream": "^3.1.4",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",

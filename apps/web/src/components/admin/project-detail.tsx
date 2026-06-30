@@ -30,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { AnalysisSection } from "./analysis-section"
 
 type MemberRole = "PM" | "SENIOR_ENG" | "DEVELOPER" | "CLIENT"
 
@@ -114,6 +115,15 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
       />
 
       <ContextSection project={p} onSaved={() => project.refetch()} />
+
+      <AnalysisSection
+        projectId={projectId}
+        hasRepo={Boolean(p.gitHubRepo)}
+        initialStatus={p.gitHubRepo?.analysisStatus ?? "IDLE"}
+        initialProgress={p.gitHubRepo?.analysisProgress ?? null}
+        codebaseSummary={p.codebaseSummary ?? null}
+        onChanged={() => project.refetch()}
+      />
     </div>
   )
 }

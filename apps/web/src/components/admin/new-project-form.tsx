@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { requestAnalysis } from "@/app/admin/projects/analysis-actions"
 
 type ProjectType = "EXISTING" | "NEW"
 
@@ -79,9 +80,15 @@ export function NewProjectForm() {
   const [form, setForm] = React.useState<FormState>(INITIAL)
   const [errors, setErrors] = React.useState<FieldErrors>({})
   const [submitError, setSubmitError] = React.useState<string | null>(null)
+  const [autoAnalyze, setAutoAnalyze] = React.useState(true)
+  const autoAnalyzeRef = React.useRef(true)
 
   const createProject = trpc.projects.create.useMutation({
     onSuccess: (data) => {
+      if (autoAnalyzeRef.current) {
+        // Fire-and-forget: starting analysis must never block the redirect.
+        void requestAnalysis(data.id).catch(() => {})
+      }
       router.push(`/admin/projects/${data.id}`)
     },
     onError: (err) => {
@@ -286,6 +293,29 @@ export function NewProjectForm() {
               aria-invalid={!!errors.repoFullName}
             />
           </Field>
+
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={autoAnalyze}
+              onChange={(e) => {
+                setAutoAnalyze(e.target.checked)
+                autoAnalyzeRef.current = e.target.checked
+              }}
+              disabled={submitting}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border border-input disabled:opacity-50"
+              style={{ accentColor: "hsl(var(--primary))" }}
+            />
+            <span className="flex flex-col">
+              <span className="text-sm text-foreground">
+                Analyze this repository after creating
+              </span>
+              <span className="mt-0.5 text-xs text-muted-foreground">
+                Maps the codebase so feature work is grounded in real
+                architecture.
+              </span>
+            </span>
+          </label>
         </Section>
 
         {submitError && (

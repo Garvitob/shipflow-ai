@@ -88,6 +88,13 @@ enum ReviewStatus {
   FAILED
 }
 
+enum AnalysisStatus {
+  IDLE
+  RUNNING
+  COMPLETE
+  FAILED
+}
+
 enum Severity {
   S1
   S2
@@ -182,6 +189,7 @@ model Project {
   targetUsers      String
   projectType      ProjectType @default(EXISTING)
   codebaseSummary  String?
+  ticketSeq        Int         @default(0)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -213,7 +221,10 @@ model FeatureRequest {
   id             String        @id @default(cuid())
   projectId      String
   clientId       String
+  ticketNumber   Int?
   type           RequestType
+  severity       Int?
+  requestedDays  Int?
   title          String
   rawDescription String
   status         FeatureStatus @default(SUBMITTED)
@@ -224,6 +235,7 @@ model FeatureRequest {
   conversationMessages ConversationMessage[]
   prd                  Prd?
 
+  @@unique([projectId, ticketNumber])
   @@index([projectId])
   @@index([clientId])
   @@index([projectId, status])
@@ -305,12 +317,16 @@ model Task {
 }
 
 model GitHubRepo {
-  id             String   @id @default(cuid())
-  projectId      String   @unique
-  repoFullName   String
-  installationId String?
-  defaultBranch  String   @default("main")
-  createdAt      DateTime @default(now())
+  id                  String         @id @default(cuid())
+  projectId           String         @unique
+  repoFullName        String
+  installationId      String?
+  defaultBranch       String         @default("main")
+  analysisStatus      AnalysisStatus @default(IDLE)
+  analysisProgress    Json?
+  analysisStartedAt   DateTime?
+  analysisCompletedAt DateTime?
+  createdAt           DateTime       @default(now())
 
   project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pullRequests PullRequest[]

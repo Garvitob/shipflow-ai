@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Sidebar } from "@/components/shell/sidebar"
 import { Topbar } from "@/components/shell/topbar"
-import { type Role } from "@/lib/navigation"
+import { type Role, type NavSection } from "@/lib/navigation"
 import { type Workspace } from "@/components/shell/workspace-identity"
 import { type SessionUser } from "@/components/shell/user-menu"
 import { type Project } from "@/components/shell/project-switcher"
@@ -17,6 +17,7 @@ export function AppShell({
   canCreateProject = false,
   onSelectProject,
   breadcrumb,
+  navSections,
   children,
 }: {
   role: Role
@@ -27,6 +28,7 @@ export function AppShell({
   canCreateProject?: boolean
   onSelectProject?: (id: string) => void
   breadcrumb?: string
+  navSections?: NavSection[]
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = React.useState(false)
@@ -39,6 +41,7 @@ export function AppShell({
         user={user}
         collapsed={collapsed}
         onToggle={() => setCollapsed((c) => !c)}
+        navSections={navSections}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
